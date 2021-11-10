@@ -40,12 +40,10 @@ impl Memory {
     }
 
     pub fn fetch_byte(&self, addr: usize) -> u8 {
-        // Takes four clock cycles
         self.mem_map[addr]
     }
 
     pub fn write_byte(&mut self, addr: usize, byte: u8) {
-        // Takes four clock cycles
         self.mem_map[addr] = byte;
     }
 

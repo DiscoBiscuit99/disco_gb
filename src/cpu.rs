@@ -4,7 +4,7 @@ use crate::memory::Memory;
 
 // ~ 1000 / 4194304, 4.194304 MHz = CPU freg (T-cycles), 
 // or 1.048576 MHz = M-cycles
-const CLOCK_CYCLE_MILLIS: u64 = 1000 / 41943044; 
+const CLOCK_CYCLE_NANOS: u64 = 1_000_000_000 / 41943044; 
 
 enum Flag {
     Z, N, H, C
@@ -68,31 +68,23 @@ impl Regs {
     pub fn set_l(&mut self, x: u8) { self.l = x; }
 
     pub fn set_af(&mut self, x: u16) {
-        let a = (x & 0xf0) >> 8;
-        let f = x & 0xf;
-        self.a = a as u8;
-        self.f = f as u8;
+        self.a = (x >> 8) as u8;
+        self.f = (x & 0xf) as u8;
     }
 
     pub fn set_bc(&mut self, x: u16) {
-        let b = (x & 0xf0) >> 8;
-        let c = x & 0xf;
-        self.b = b as u8;
-        self.c = c as u8;
+        self.b = (x >> 8) as u8;
+        self.c = (x & 0xf) as u8;
     }
 
     pub fn set_de(&mut self, x: u16) {
-        let d = (x & 0xf0) >> 8;
-        let e = x & 0xf;
-        self.d = d as u8;
-        self.e = e as u8;
+        self.d = (x >> 8) as u8;
+        self.e = (x & 0xf) as u8;
     }
 
     pub fn set_hl(&mut self, x: u16) {
-        let h = (x & 0xf0) >> 8;
-        let l = x & 0xf;
-        self.h = h as u8;
-        self.l = l as u8;
+        self.h = (x >> 8) as u8;
+        self.l = (x & 0xf) as u8;
     }
 }
 
@@ -140,14 +132,19 @@ impl Cpu {
             0x31 => self.opcode_31(memory),     // LD SP, u16 (12 clock cycles)
             0x32 => self.opcode_32(memory),     // LD (HL-), A (8 clock cycles)
             0xaf => self.opcode_af(),           // XOR A, A (4 clock cycles)
-            0xcb => self.opcode_cb(),           // Prefix.
+            0xcb => self.prefix(),           // Prefix.
             _ => unimplemented!("opcode {:#04x}", opcode),
         }
     }
 
     /* PREFIX INSTRUCTIONS */
 
-    fn opcode_cb(&self) {}
+    fn prefix(&self, memory: &Memory) {
+        let opcode = self.consume_byte(memory);
+        match opcode {
+
+        }
+    }
 
     /* OTHER INSTRUCTIONS */
 
