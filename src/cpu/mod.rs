@@ -2,21 +2,24 @@ use std::{thread, time};
 
 use crate::memory::Memory;
 
+mod instructions;
+use instructions::*;
+
 // ~ 1000 / 4194304, 4.194304 MHz = CPU freg (T-cycles), 
 // or 1.048576 MHz = M-cycles
 const CLOCK_CYCLE_NANOS: u64 = 1_000_000_000 / 41943044; 
 
-enum Flag {
+enum Flags {
     Z, N, H, C
 }
 
-impl Into<u8> for Flag {
+impl Into<u8> for Flags {
     fn into(self) -> u8 {
         match self {
-            Flag::Z => 1 << 7,
-            Flag::N => 1 << 6,
-            Flag::H => 1 << 5,
-            Flag::C => 1 << 4,
+            Flags::Z => 1 << 7,
+            Flags::N => 1 << 6,
+            Flags::H => 1 << 5,
+            Flags::C => 1 << 4,
         }
     } 
 }
@@ -30,14 +33,13 @@ struct Regs {
 }
 
 impl Regs {
-    pub fn is_flag_set(&self, flag: u8) -> bool {
-        let mut is_set = false;
-        if self.f & flag == 1 {
-            is_set = true;
-        }
-        is_set
+    // Returns whether the given flags are set in the F register.
+    pub fn are_flags_set(&self, flags: u8) -> bool {
+        self.f & flags == self.f
     }
 
+    // Sets the given flags in the F register.
+    // Does not reset the other flags.
     pub fn set_flags(&mut self, flags: u8) {
         self.f = self.f | flags;
     }
@@ -95,6 +97,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
+    // Returns a new instance of `Cpu`.
     pub fn new() -> Self {
         Self {
             regs: Regs::default(),
@@ -103,6 +106,7 @@ impl Cpu {
         }
     }
 
+    // Runs the CPU.
     pub fn run(&mut self, memory: &mut Memory) {
         for _ in 0..10 {
             println!("\nPC: {:#06x}", self.pc);
@@ -114,84 +118,31 @@ impl Cpu {
         }
     }
 
-    fn fetch_next_byte(&self, memory: &Memory) -> u8 {
-        memory.fetch_byte(self.pc)
-    }
-
-    fn consume_byte(&mut self, memory: &Memory) -> u8 {
-        let byte = self.fetch_next_byte(memory);
-        self.pc += 1;
-        byte
-    }
-
+    // Matches (decodes) the given opcode and executes it.
     fn decode_execute(&mut self, opcode: u8, memory: &mut Memory) {
         match opcode {
-            0x00 => self.opcode_00(),           // NOP (4 clock cycles)
+            0x00 => opcode_00(self),           // NOP (4 clock cycles)
             //0x30 => self.opcode_30(memory),   // JR NC, i8 (12/8 clock cycles)
-            0x21 => self.opcode_21(memory),     // LD HL, u16 (12 clock cycles)
-            0x31 => self.opcode_31(memory),     // LD SP, u16 (12 clock cycles)
-            0x32 => self.opcode_32(memory),     // LD (HL-), A (8 clock cycles)
-            0xaf => self.opcode_af(),           // XOR A, A (4 clock cycles)
-            0xcb => self.prefix(),           // Prefix.
+            0x21 => opcode_21(self, memory),     // LD HL, u16 (12 clock cycles)
+            //0x31 => self.opcode_31(memory),     
+            0x31 => opcode_31(self, memory),    // LD SP, u16 (12 clock cycles)
+            0x32 => opcode_32(self, memory),     // LD (HL-), A (8 clock cycles)
+            0xaf => opcode_af(self),           // XOR A, A (4 clock cycles)
+            0xcb => prefix(self, memory),        // Prefix.
             _ => unimplemented!("opcode {:#04x}", opcode),
         }
     }
 
-    /* PREFIX INSTRUCTIONS */
-
-    fn prefix(&self, memory: &Memory) {
-        let opcode = self.consume_byte(memory);
-        match opcode {
-
-        }
+    // Returns the byte at the current PC.
+    fn fetch_next_byte(&self, memory: &Memory) -> u8 {
+        memory.fetch_byte(self.pc)
     }
 
-    /* OTHER INSTRUCTIONS */
-
-    // NOP
-    fn opcode_00(&mut self) {
+    // Returns the byte at the current PC and increments it.
+    fn consume_byte(&mut self, memory: &Memory) -> u8 {
+        let byte = self.fetch_next_byte(memory);
         self.pc += 1;
-    }
-    
-    // JR NC, i8
-    //fn opcode_30(&mut self, memory: &Memory) {
-        //println!("JR NC, i8");
-        //if !self.regs.is_flag_set(Flag::C.into()) {
-            //let offset = self.consume_byte(memory) as i16; // FIXME: interpret byte as little endian signed integer.
-            //self.pc = self.pc.overflowing_add(offset);
-        //}
-    //}
-
-    // LD HL, u16
-    fn opcode_21(&mut self, memory: &Memory) {
-        let lower = self.consume_byte(memory) as u16;
-        let upper = (self.consume_byte(memory) as u16) << 8;
-        self.regs.set_hl(lower | upper);
-    }
-
-    // LD SP, u16
-    // REMEMBER: the GameBoy is little endian, meaning 
-    // the first byte is least significant.
-    fn opcode_31(&mut self, memory: &Memory) {
-        let lower = self.consume_byte(memory) as u16;
-        let upper = (self.consume_byte(memory) as u16) << 8;
-        self.sp = (lower | upper) as usize;
-    }
-
-    // LD (HL-), A
-    fn opcode_32(&mut self, memory: &mut Memory) {
-        // load A into (HL)
-        memory.write_byte(self.regs.hl() as usize, self.regs.a());
-        // decrement HL
-        self.regs.set_hl(self.regs.hl().overflowing_sub(1).0);
-    }
-
-    // XOR A, A
-    fn opcode_af(&mut self) {
-        self.regs.set_a(self.regs.a() ^ self.regs.a());
-        if self.regs.a() == 0 {
-            self.regs.set_flags(Flag::Z.into());
-        }
+        byte
     }
 }
 
