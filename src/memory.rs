@@ -39,7 +39,7 @@ impl Memory {
         }
     }
 
-    pub fn fetch_byte(&self, addr: usize) -> u8 {
+    pub fn read_byte(&self, addr: usize) -> u8 {
         self.mem_map[addr]
     }
 
