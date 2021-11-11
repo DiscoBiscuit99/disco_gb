@@ -1,6 +1,18 @@
 use crate::memory::Memory;
 use crate::cpu::{ Cpu, registers::Flags };
 
+/// Returns a tuple of the incremented value of `register` and the modified flags.
+pub fn inc_reg(register: u8) -> (u8, u8) {
+    let new_value = register.wrapping_add(1).0;
+    let mut new_flags = 0;
+    if new_value == 0 {
+        new_flags |= Flags::Z;
+    }
+    if register & (1 << 3) 
+    
+    (new_value, new_flags)
+}
+
 /* PREFIX INSTRUCTIONS */
 
 /// Shifts register B by one bit to the left.
@@ -207,7 +219,7 @@ pub fn opcode_0e(cpu: &mut Cpu, memory: &Memory) {
 // JR NZ, i8. Jump relatively if the Z flag is unset.
 pub fn opcode_20(cpu: &mut Cpu, memory: &Memory) {
     let offset = cpu.consume_byte(memory) as i8;
-    if !cpu.regs.are_flags_set(Flags::Z) {
+    if !cpu.regs.check_flags(Flags::Z) {
         cpu.pc = (cpu.pc as i8).overflowing_add(offset).0 as usize;
     }
 }
