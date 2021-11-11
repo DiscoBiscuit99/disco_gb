@@ -4,83 +4,83 @@ use crate::cpu::{ Cpu, registers::Flags };
 /* PREFIX INSTRUCTIONS */
 
 /// Shifts register B by one bit to the left.
-pub fn opcode_cb00() {
-    self.regs.set_b(self.regs.b().rotate_left(1));
+pub fn opcode_cb00(cpu: &mut Cpu) {
+    cpu.regs.set_b(cpu.regs.b().rotate_left(1));
 }
 
 /// Shifts register C by one bit to the left.
-pub fn opcode_cb01() {
-    self.regs.set_c(self.regs.c().rotate_left(1));
+pub fn opcode_cb01(cpu: &mut Cpu) {
+    cpu.regs.set_c(cpu.regs.c().rotate_left(1));
 }
 
 /// Shifts register D by one bit to the left.
-pub fn opcode_cb02() {
-    self.regs.set_d(self.regs.d().rotate_left(1));
+pub fn opcode_cb02(cpu: &mut Cpu) {
+    cpu.regs.set_d(cpu.regs.d().rotate_left(1));
 }
 
 /// Shifts register E by one bit to the left.
-pub fn opcode_cb03() {
-    self.regs.set_e(self.regs.e().rotate_left(1));
+pub fn opcode_cb03(cpu: &mut Cpu) {
+    cpu.regs.set_e(cpu.regs.e().rotate_left(1));
 }
 
 /// Shifts register H by one bit to the left.
-pub fn opcode_cb04() {
-    self.regs.set_h(self.regs.h().rotate_left(1));
+pub fn opcode_cb04(cpu: &mut Cpu) {
+    cpu.regs.set_h(cpu.regs.h().rotate_left(1));
 }
 
 /// Shifts register L by one bit to the left.
-pub fn opcode_cb05() {
-    self.regs.set_l(self.regs.l().rotate_left(1));
+pub fn opcode_cb05(cpu: &mut Cpu) {
+    cpu.regs.set_l(cpu.regs.l().rotate_left(1));
 }
 
 /// Shifts tregister HL by one bit to the left.
-pub fn opcode_cb06() {
-    self.regs.set_hl(self.regs.hl().rotate_left(1));
+pub fn opcode_cb06(cpu: &mut Cpu) {
+    cpu.regs.set_hl(cpu.regs.hl().rotate_left(1));
 }
 
 /// Shifts register A by one bit to the left.
-pub fn opcode_cb07() {
-    self.regs.set_a(self.regs.a().rotate_left(1));
+pub fn opcode_cb07(cpu: &mut Cpu) {
+    cpu.regs.set_a(cpu.regs.a().rotate_left(1));
 }
 
 /// Shifts register B by one bit to the right.
-pub fn opcode_cb08() {
-    self.regs.set_b(self.regs.b().rotate_right(1));
+pub fn opcode_cb08(cpu: &mut Cpu) {
+    cpu.regs.set_b(cpu.regs.b().rotate_right(1));
 }
 
 /// Shifts register C by one bit to the right.
-pub fn opcode_cb09() {
-    self.regs.set_c(self.regs.c().rotate_right(1));
+pub fn opcode_cb09(cpu: &mut Cpu) {
+    cpu.regs.set_c(cpu.regs.c().rotate_right(1));
 }
 
 /// Shifts register D by one bit to the right.
-pub fn opcode_cb0a() {
-    self.regs.set_d(self.regs.d().rotate_right(1));
+pub fn opcode_cb0a(cpu: &mut Cpu) {
+    cpu.regs.set_d(cpu.regs.d().rotate_right(1));
 }
 
 /// Shifts register E by one bit to the right.
-pub fn opcode_cb0b() {
-    self.regs.set_e(self.regs.e().rotate_right(1));
+pub fn opcode_cb0b(cpu: &mut Cpu) {
+    cpu.regs.set_e(cpu.regs.e().rotate_right(1));
 }
 
 /// Shifts register H by one bit to the right.
-pub fn opcode_cb0c() {
-    self.regs.set_h(self.regs.h().rotate_right(1));
+pub fn opcode_cb0c(cpu: &mut Cpu) {
+    cpu.regs.set_h(cpu.regs.h().rotate_right(1));
 }
 
 /// Shifts register L by one bit to the right.
-pub fn opcode_cb0d() {
-    self.regs.set_l(self.regs.l().rotate_right(1));
+pub fn opcode_cb0d(cpu: &mut Cpu) {
+    cpu.regs.set_l(cpu.regs.l().rotate_right(1));
 }
 
 /// Shifts tregister HL by one bit to the right.
-pub fn opcode_cb0e() {
-    self.regs.set_hl(self.regs.hl().rotate_right(1));
+pub fn opcode_cb0e(cpu: &mut Cpu) {
+    cpu.regs.set_hl(cpu.regs.hl().rotate_right(1));
 }
 
 /// Shifts register A by one bit to the right.
-pub fn opcode_cb0f() {
-    self.regs.set_a(self.regs.a().rotate_right(1));
+pub fn opcode_cb0f(cpu: &mut Cpu) {
+    cpu.regs.set_a(cpu.regs.a().rotate_right(1));
 }
 
 
