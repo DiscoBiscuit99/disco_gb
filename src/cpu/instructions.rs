@@ -14,15 +14,6 @@ pub fn opcode_0e(cpu: &mut Cpu, memory: &Memory) {
     cpu.regs.set_c(byte);
 }
 
-// JR NC, i8
-//fn opcode_30(cpu: &mut Cpu, memory: &Memory) {
-    //println!("JR NC, i8");
-    //if !cpu.regs.is_flag_set(Flags::C.into()) {
-        //let offset = cpu.consume_byte(memory) as i16; // FIXME: interpret byte as little endian signed integer.
-        //cpu.pc = cpu.pc.overflowing_add(offset);
-    //}
-//}
-
 // JR NZ, i8. Jump relatively if the Z flag is unset.
 pub fn opcode_20(cpu: &mut Cpu, memory: &Memory) {
     let offset = cpu.consume_byte(memory) as i8;
