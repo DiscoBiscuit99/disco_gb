@@ -5,72 +5,105 @@ use crate::cpu::{ Cpu, registers::Flags };
 
 /// Shifts register B by one bit to the left.
 pub fn opcode_cb00(cpu: &mut Cpu) {
-    if (cpu.check_bits(reg, 0x8)) {
+    let b = cpu.regs.b();
+    if (cpu.check_bits(b, 0x8)) {
         cpu.regs.set_flags(Flags::C);
     }
 
-    cpu.regs.set_b(cpu.regs.b().rotate_left(1));
+    cpu.regs.set_b(b.rotate_left(1));
+    if (cpu.check_bits(b, 0x0)) {
+        cpu.regs.set_flags(Flags::Z);
+    }
 }
 
 /// Shifts register C by one bit to the left.
 pub fn opcode_cb01(cpu: &mut Cpu) {
-    if (cpu.check_bits(reg, 0x8)) {
+    let c = cpu.regs.c();
+    if (cpu.check_bits(c, 0x8)) {
         cpu.regs.set_flags(Flags::C);
     }
-    cpu.regs.set_c(cpu.regs.c().rotate_left(1));
+    cpu.regs.set_c(c.rotate_left(1));
+    if (cpu.check_bits(c, 0x0)) {
+        cpu.regs.set_flags(Flags::Z);
+    }
 }
 
 /// Shifts register D by one bit to the left.
 pub fn opcode_cb02(cpu: &mut Cpu) {
-    if (cpu.check_bits(reg, 0x8)) {
+    let d = cpu.regs.d();
+    if (cpu.check_bits(d, 0x8)) {
         cpu.regs.set_flags(Flags::C);
     }
-    cpu.regs.set_d(cpu.regs.d().rotate_left(1));
+    cpu.regs.set_d(d.rotate_left(1));
+    if (cpu.check_bits(d, 0x0)) {
+        cpu.regs.set_flags(Flags::Z);
+    }
 }
 
 /// Shifts register E by one bit to the left.
 pub fn opcode_cb03(cpu: &mut Cpu) {
-    if (cpu.check_bits(reg, 0x8)) {
+    let e = cpu.regs.e();
+    if (cpu.check_bits(e, 0x8)) {
         cpu.regs.set_flags(Flags::C);
     }
-    cpu.regs.set_e(cpu.regs.e().rotate_left(1));
+    cpu.regs.set_e(e.rotate_left(1));
+    if (cpu.check_bits(e, 0x0)) {
+        cpu.regs.set_flags(Flags::Z);
+    }
 }
 
 /// Shifts register H by one bit to the left.
 pub fn opcode_cb04(cpu: &mut Cpu) {
-    if (cpu.check_bits(reg, 0x8)) {
+    let h = cpu.regs.h();
+    if (cpu.check_bits(h, 0x8)) {
         cpu.regs.set_flags(Flags::C);
     }
-    cpu.regs.set_h(cpu.regs.h().rotate_left(1));
+    cpu.regs.set_h(h.rotate_left(1));
+    if (cpu.check_bits(h, 0x0)) {
+        cpu.regs.set_flags(Flags::Z);
+    }
 }
 
 /// Shifts register L by one bit to the left.
 pub fn opcode_cb05(cpu: &mut Cpu) {
-    if (cpu.check_bits(reg, 0x8)) {
+    let l = cpu.regs.l();
+    if (cpu.check_bits(l, 0x8)) {
         cpu.regs.set_flags(Flags::C);
     }
-    cpu.regs.set_l(cpu.regs.l().rotate_left(1));
+    cpu.regs.set_l(l.rotate_left(1));
+    if (cpu.check_bits(l, 0x0)) {
+        cpu.regs.set_flags(Flags::Z);
+    }
 }
 
 /// Shifts tregister HL by one bit to the left.
 pub fn opcode_cb06(cpu: &mut Cpu) {
-    if (cpu.check_bits(reg, 0x8)) {
+    let hl = cpu.regs.hl();
+    if (cpu.check_bits(hl, 0x8000)) {
         cpu.regs.set_flags(Flags::C);
     }
-    cpu.regs.set_hl(cpu.regs.hl().rotate_left(1));
+    cpu.regs.set_hl(hl.rotate_left(1));
+    if (cpu.check_bits(hl, 0x0)) {
+        cpu.regs.set_flags(Flags::Z);
+    }
 }
 
 /// Shifts register A by one bit to the left.
 pub fn opcode_cb07(cpu: &mut Cpu) {
-    if (cpu.check_bits(reg, 0x8)) {
+    let a = cpu.regs.a();
+    if (cpu.check_bits(a, 0x8)) {
         cpu.regs.set_flags(Flags::C);
     }
-    cpu.regs.set_a(cpu.regs.a().rotate_left(1));
+    cpu.regs.set_a(a.rotate_left(1));
+    if (cpu.check_bits(a, 0x0)) {
+        cpu.regs.set_flags(Flags::Z);
+    }
 }
 
 /// Shifts register B by one bit to the right.
 pub fn opcode_cb08(cpu: &mut Cpu) {
-    if (cpu.check_bits(reg, 0x8)) {
+    let b = cpu.regs.b();
+    if (cpu.check_bits(reg, 1 >> 8)) {
         cpu.regs.set_flags(Flags::C);
     }
     cpu.regs.set_b(cpu.regs.b().rotate_right(1));
