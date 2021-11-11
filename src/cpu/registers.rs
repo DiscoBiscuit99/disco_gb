@@ -33,6 +33,11 @@ impl Regs {
         self.f = self.f & (flags ^ 0xff);
     }
 
+    // Increments the register by 1 and modifies the flags.
+    pub fn inc_reg(&mut self) {
+        // TODO
+    }
+
     /* Getters */
     pub fn a(&self) -> u8 { self.a }
     pub fn f(&self) -> u8 { self.f }
@@ -76,11 +81,6 @@ impl Regs {
     pub fn set_hl(&mut self, x: u16) {
         self.h = (x >> 8) as u8;
         self.l = (x & 0xff) as u8;
-    }
-
-    // Increments the register by 1 and modifies the flags.
-    pub fn inc_reg(&mut self) {
-        // TODO
     }
 }
 
