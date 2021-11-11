@@ -1,6 +1,28 @@
 use crate::memory::Memory;
 use crate::cpu::{ Cpu, registers::Flags };
 
+/* PREFIX INSTRUCTIONS */
+
+// Handles the prefixed instructions.
+pub fn prefix(cpu: &mut Cpu, memory: &Memory) {
+    let opcode = cpu.consume_byte(memory);
+    match opcode {
+        0x7c => opcode_cb7c(cpu, memory),   // BIT 7, H
+        _ => unimplemented!("prefixed opcode {:#04x}", opcode),
+    }
+}
+
+// BIT 7, H.
+// If bit 7 in register H is unset (= 0) then set the Z flag.
+// Reset the N flag, set the H flag.
+pub fn opcode_cb7c(cpu: &mut Cpu, memory: &Memory) {
+    if cpu.regs.h() & (1 << 7) == 0 {
+        cpu.regs.set_flags(Flags::Z);
+    }
+    cpu.regs.reset_flags(Flags::N);
+    cpu.regs.set_flags(Flags::H);
+}
+
 /* OTHER INSTRUCTIONS */
 
 // NOP
@@ -64,27 +86,5 @@ pub fn opcode_af(cpu: &mut Cpu) {
 pub fn opcode_e2(cpu: &Cpu, memory: &mut Memory) {
     // 0xff00 + C will never overflow, so need to wrap here.
     memory.write_byte(0xff00 + cpu.regs.c() as usize, cpu.regs.a());
-}
-
-/* PREFIX INSTRUCTIONS */
-
-// Handles the prefixed instructions.
-pub fn prefix(cpu: &mut Cpu, memory: &Memory) {
-    let opcode = cpu.consume_byte(memory);
-    match opcode {
-        0x7c => opcode_cb7c(cpu, memory),   // BIT 7, H
-        _ => unimplemented!("prefixed opcode {:#04x}", opcode),
-    }
-}
-
-// BIT 7, H.
-// If bit 7 in register H is unset (= 0) then set the Z flag.
-// Reset the N flag, set the H flag.
-pub fn opcode_cb7c(cpu: &mut Cpu, memory: &Memory) {
-    if cpu.regs.h() & (1 << 7) == 0 {
-        cpu.regs.set_flags(Flags::Z);
-    }
-    cpu.regs.reset_flags(Flags::N);
-    cpu.regs.set_flags(Flags::H);
 }
 
