@@ -16,26 +16,61 @@ pub struct Regs {
 }
 
 impl Regs {
-    // Returns whether the given flags are set in the F register.
-    pub fn are_flags_set(&self, flags: u8) -> bool {
+    /// Returns whether the given flags are set in the F register.
+    pub fn check_flags(&self, flags: u8) -> bool {
         self.f & flags == flags
     }
 
-    // Sets the given flags in the F register.
-    // Does not modify the other flags.
+    /// Sets the given flags in the F register.
+    /// Does not modify the other flags.
     pub fn set_flags(&mut self, flags: u8) {
         self.f = self.f | flags;
     }
     
-    // Resets the given flags in the F register.
-    // Does not modify the other flags.
+    /// Resets the given flags in the F register.
+    /// Does not modify the other flags.
     pub fn reset_flags(&mut self, flags: u8) {
         self.f = self.f & (flags ^ 0xff);
     }
 
-    // Increments the register by 1 and modifies the flags.
-    pub fn inc_reg(&mut self) {
-        // TODO
+    pub fn inc_reg(&mut self, register: &str) {
+        match register {
+            "a" => {
+
+            },
+            "b" => {
+
+            },
+            "c" => {
+
+            },
+            "d" => {
+
+            },
+            "e" => {
+
+            }, 
+            "h" => {
+
+            },
+            "l" => {
+
+            },
+            "bc" => {
+
+            },
+            "de" => {
+
+            },
+            "hl" => {
+
+            }
+        }
+    }
+
+    /// Returns whether the `bits` of `register` are set.
+    pub fn check_bits(register: u8, bits: u8) -> bool {
+        register | bits == register
     }
 
     /* Getters */
