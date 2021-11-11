@@ -46,8 +46,6 @@ impl Cpu {
             0x0e => opcode_0e(self, memory),    // LD C, u8         (8t cycles)
             0x20 => opcode_20(self, memory),    // JR NZ, i8        (12t/8t cycles)
             0x21 => opcode_21(self, memory),    // LD HL, u16       (12t cycles)
-            //0x30 => self.opcode_30(memory),     // JR NC, i8        (12t/8t cycles)
-            //0x31 => self.opcode_31(memory),     
             0x31 => opcode_31(self, memory),    // LD SP, u16       (12t cycles)
             0x32 => opcode_32(self, memory),    // LD (HL-), A      (8t cycles)
             0x3e => opcode_3e(self, memory),    // LD A, u8         (8t cycles)
