@@ -18,7 +18,7 @@ pub struct Regs {
 impl Regs {
     /// Returns whether the given flags are set in the F register.
     pub fn check_flags(&self, flags: u8) -> bool {
-        self.f & flags == flags
+        Self::check_bits_8bit(self.f, flags)
     }
 
     /// Sets the given flags in the F register.
@@ -31,46 +31,6 @@ impl Regs {
     /// Does not modify the other flags.
     pub fn reset_flags(&mut self, flags: u8) {
         self.f = self.f & (flags ^ 0xff);
-    }
-
-    pub fn inc_reg(&mut self, register: &str) {
-        match register {
-            "a" => {
-
-            },
-            "b" => {
-
-            },
-            "c" => {
-
-            },
-            "d" => {
-
-            },
-            "e" => {
-
-            }, 
-            "h" => {
-
-            },
-            "l" => {
-
-            },
-            "bc" => {
-
-            },
-            "de" => {
-
-            },
-            "hl" => {
-
-            }
-        }
-    }
-
-    /// Returns whether the `bits` of `register` are set.
-    pub fn check_bits(register: u8, bits: u8) -> bool {
-        register | bits == register
     }
 
     /* Getters */
@@ -116,6 +76,19 @@ impl Regs {
     pub fn set_hl(&mut self, x: u16) {
         self.h = (x >> 8) as u8;
         self.l = (x & 0xff) as u8;
+    }
+}
+
+// Associated functions
+impl Regs {
+    /// Returns whether the `bits` in `register` are set for 8 bit registers.
+    pub fn check_bits_8bit(register: u8, bits: u8) -> bool {
+        register & bits == bits
+    }
+    
+    /// Returns whether the `bits` in `register` are set for 16 bit registers.
+    pub fn check_bits_16bit(register: u16, bits: u16) -> bool {
+        register & bits == bits
     }
 }
 
