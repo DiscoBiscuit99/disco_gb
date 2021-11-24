@@ -292,6 +292,25 @@ pub fn opcode_00(cpu: &mut Cpu) {
     cpu.pc += 1;
 }
 
+/// INC B
+pub fn opcode_04(cpu: &mut Cpu) {
+    let new_value = cpu.regs.b().wrapping_add(1);
+    let mut flags = 0;
+    if new_value == 0 {
+        flags |= Flags::Z;
+    }
+    // Only if the register value's lowest 4 bits are set will it overflow 
+    // from bit 3 when adding 1.
+    if cpu.regs.b() & 0b1111 == 0b1111 {
+        // Bit 3 overflowed.
+        flags |= Flags::H;
+    }
+
+    cpu.regs.set_b(new_value);
+    cpu.regs.set_flags(flags);
+    cpu.regs.reset_flags(Flags::N);
+}
+
 /// DEC B
 pub fn opcode_05(cpu: &mut Cpu) {
     let new_value = cpu.regs.b().wrapping_sub(1);
@@ -336,6 +355,25 @@ pub fn opcode_0c(cpu: &mut Cpu) {
     cpu.regs.reset_flags(Flags::N);
 }
 
+/// DEC C
+pub fn opcode_0d(cpu: &mut Cpu) {
+    let new_value = cpu.regs.c().wrapping_sub(1);
+    let mut new_flags = 0;
+    if new_value == 0 {
+        new_flags |= Flags::Z;
+    }
+    new_flags |= Flags::N;
+    // Only if the register value's lowest set bit is the 4th bit will it overflow 
+    // (backwards) from bit 4 when subtracting 1.
+    if cpu.regs.c() & 0b11111 == 0b10000 {
+        // Bit 4 overflowed (backwards).
+        new_flags |= Flags::H;
+    }
+
+    cpu.regs.set_c(new_value);
+    cpu.regs.set_flags(new_flags);
+}
+
 /// LD C, u8
 pub fn opcode_0e(cpu: &mut Cpu, memory: &Memory) {
     let byte = cpu.consume_byte(memory);
@@ -356,6 +394,31 @@ pub fn opcode_13(cpu: &mut Cpu) {
     cpu.regs.set_de(new_de);
 }
 
+/// DEC D
+pub fn opcode_15(cpu: &mut Cpu) {
+    let new_value = cpu.regs.d().wrapping_sub(1);
+    let mut new_flags = 0;
+    if new_value == 0 {
+        new_flags |= Flags::Z;
+    }
+    new_flags |= Flags::N;
+    // Only if the register value's lowest set bit is the 4th bit will it overflow 
+    // (backwards) from bit 4 when subtracting 1.
+    if cpu.regs.d() & 0b11111 == 0b10000 {
+        // Bit 4 overflowed (backwards).
+        new_flags |= Flags::H;
+    }
+
+    cpu.regs.set_d(new_value);
+    cpu.regs.set_flags(new_flags);
+}
+
+/// LD D, u8
+pub fn opcode_16(cpu: &mut Cpu, memory: &Memory) {
+    let byte = cpu.consume_byte(memory);
+    cpu.regs.set_d(byte);
+}
+
 /// RLA
 pub fn opcode_17(cpu: &mut Cpu) {
     let carry_in = match cpu.regs.check_flags(Flags::C) {
@@ -374,13 +437,47 @@ pub fn opcode_17(cpu: &mut Cpu) {
     cpu.regs.reset_flags(Flags::Z | Flags::N | Flags::H);
 }
 
+/// JR i8
+pub fn opcode_18(cpu: &mut Cpu, memory: &Memory) {
+    // The castings and their order in this function are important 
+    // and should not be changed. Otherwise the values won't be translated correctly.
+    let offset = cpu.consume_byte(memory) as i8;
+    cpu.pc = (cpu.pc as i16).wrapping_add(offset as i16) as usize;
+}
+
 /// LD A, (DE)
 pub fn opcode_1a(cpu: &mut Cpu, memory: &Memory) {
     let addr = cpu.regs.de() as usize;
     cpu.regs.set_a(memory.read_byte(addr));
 }
 
-/// JR NZ, i8. Jump relatively if the Z flag is unset.
+/// DEC E
+pub fn opcode_1d(cpu: &mut Cpu) {
+    let new_value = cpu.regs.e().wrapping_sub(1);
+    let mut new_flags = 0;
+    if new_value == 0 {
+        new_flags |= Flags::Z;
+    }
+    new_flags |= Flags::N;
+    // Only if the register value's lowest set bit is the 4th bit will it overflow 
+    // (backwards) from bit 4 when subtracting 1.
+    if cpu.regs.e() & 0b11111 == 0b10000 {
+        // Bit 4 overflowed (backwards).
+        new_flags |= Flags::H;
+    }
+
+    cpu.regs.set_e(new_value);
+    cpu.regs.set_flags(new_flags);
+}
+
+/// LD E, u8
+pub fn opcode_1e(cpu: &mut Cpu, memory: &Memory) {
+    let byte = cpu.consume_byte(memory);
+    cpu.regs.set_e(byte);
+}
+
+/// JR NZ, i8. 
+/// Jump relatively if the Z flag is unset.
 pub fn opcode_20(cpu: &mut Cpu, memory: &Memory) {
     // The castings and their order in this function are important 
     // and should not be changed. Otherwise the values won't be translated correctly.
@@ -411,6 +508,36 @@ pub fn opcode_23(cpu: &mut Cpu) {
     cpu.regs.set_hl(new_hl);
 }
 
+/// INC H
+pub fn opcode_24(cpu: &mut Cpu) {
+    let new_value = cpu.regs.h().wrapping_add(1);
+    let mut flags = 0;
+    if new_value == 0 {
+        flags |= Flags::Z;
+    }
+    // Only if the register value's lowest 4 bits are set will it overflow 
+    // from bit 3 when adding 1.
+    if cpu.regs.h() & 0b1111 == 0b1111 {
+        // Bit 3 overflowed.
+        flags |= Flags::H;
+    }
+
+    cpu.regs.set_h(new_value);
+    cpu.regs.set_flags(flags);
+    cpu.regs.reset_flags(Flags::N);
+}
+
+/// JR Z, i8. 
+/// Jump relatively if the Z flag is set.
+pub fn opcode_28(cpu: &mut Cpu, memory: &Memory) {
+    // The castings and their order in this function are important 
+    // and should not be changed. Otherwise the values won't be translated correctly.
+    let offset = cpu.consume_byte(memory) as i8;
+    if cpu.regs.check_flags(Flags::Z) {
+        cpu.pc = (cpu.pc as i16).wrapping_add(offset as i16) as usize;
+    }
+}
+
 /// LD SP, u16
 /// REMEMBER: the GameBoy is little endian, meaning 
 /// the first byte is least significant.
@@ -428,6 +555,25 @@ pub fn opcode_32(cpu: &mut Cpu, memory: &mut Memory) {
     cpu.regs.set_hl(cpu.regs.hl().wrapping_sub(1));
 }
 
+/// DEC A
+pub fn opcode_3d(cpu: &mut Cpu) {
+    let new_value = cpu.regs.a().wrapping_sub(1);
+    let mut new_flags = 0;
+    if new_value == 0 {
+        new_flags |= Flags::Z;
+    }
+    new_flags |= Flags::N;
+    // Only if the register value's lowest set bit is the 4th bit will it overflow 
+    // (backwards) from bit 4 when subtracting 1.
+    if cpu.regs.a() & 0b11111 == 0b10000 {
+        // Bit 4 overflowed (backwards).
+        new_flags |= Flags::H;
+    }
+
+    cpu.regs.set_a(new_value);
+    cpu.regs.set_flags(new_flags);
+}
+
 /// LD A, u8
 pub fn opcode_3e(cpu: &mut Cpu, memory: &Memory) {
     let byte = cpu.consume_byte(memory);
@@ -440,6 +586,18 @@ pub fn opcode_4f(cpu: &mut Cpu) {
     cpu.regs.set_c(a);
 }
 
+/// LD D, A
+pub fn opcode_57(cpu: &mut Cpu) {
+    let a = cpu.regs.a();
+    cpu.regs.set_d(a);
+}
+
+/// LD H, A
+pub fn opcode_67(cpu: &mut Cpu) {
+    let a = cpu.regs.a();
+    cpu.regs.set_h(a);
+}
+
 /// LD (HL), A
 pub fn opcode_77(cpu: &Cpu, memory: &mut Memory) {
     memory.write_byte(cpu.regs.hl() as usize, cpu.regs.a());
@@ -449,6 +607,12 @@ pub fn opcode_77(cpu: &Cpu, memory: &mut Memory) {
 pub fn opcode_7b(cpu: &mut Cpu) {
     let e = cpu.regs.e();
     cpu.regs.set_a(e);
+}
+
+/// LD A, H
+pub fn opcode_7c(cpu: &mut Cpu) {
+    let h = cpu.regs.h();
+    cpu.regs.set_a(h);
 }
 
 /// ADD A, B
@@ -469,6 +633,26 @@ pub fn opcode_80(cpu: &mut Cpu) {
     cpu.regs.reset_flags(Flags::N);
 
     cpu.regs.set_a(sum);
+}
+
+/// SUB A, B
+pub fn opcode_90(cpu: &mut Cpu) {
+    let a = cpu.regs.a();
+    let b = cpu.regs.b();
+    let diff = a.wrapping_sub(b);
+
+    let mut flags = Flags::N;
+    if diff == 0 {
+        flags |= Flags::Z;
+    }
+    if a & (1 << 4) == 1 && b & (1 << 4) == 1 { 
+        flags |= Flags::H;
+    }
+    if b > a {
+        flags |= Flags::C;
+    }
+
+    cpu.regs.set_a(diff);
 }
 
 /// XOR A, A
@@ -536,9 +720,41 @@ pub fn opcode_e2(cpu: &Cpu, memory: &mut Memory) {
     memory.write_byte(0xff00 + cpu.regs.c() as usize, cpu.regs.a());
 }
 
+/// LD (u16), A
+pub fn opcode_ea(cpu: &mut Cpu, memory: &mut Memory) {
+    let lower = cpu.consume_byte(memory);
+    let upper = cpu.consume_byte(memory);
+    memory.write_byte((upper | lower) as usize, cpu.regs.a());
+}
+
+/// LD A, (FF00+u8)
+pub fn opcode_f0(cpu: &mut Cpu, memory: &Memory) {
+    let byte = cpu.consume_byte(memory);
+    // 0xff00 + u8 will never overflow, so no need to wrap here.
+    cpu.regs.set_a(memory.read_byte(0xff00 + byte as usize));
+}
+
 /// DI
 /// Disables the Interrupt Master Enable flag (IME).
 pub fn opcode_f3(cpu: &mut Cpu) {
     cpu.ime = 0;
+}
+
+/// CP A, u8
+pub fn opcode_fe(cpu: &mut Cpu, memory: &Memory) {
+    let a = cpu.regs.a();
+    let byte = cpu.consume_byte(memory);
+    let diff = a.wrapping_sub(byte);
+
+    let mut flags = Flags::N;
+    if diff == 0 {
+        flags |= Flags::Z;
+    }
+    if a & (1 << 4) == 1 && byte & (1 << 4) == 1 { 
+        flags |= Flags::H;
+    }
+    if byte > a {
+        flags |= Flags::C;
+    }
 }
 
