@@ -7,6 +7,8 @@ use crate::cpu::{
     Cpu, 
 };
 
+pub mod lookup;
+
 /// Returns a tuple of the incremented value of `register` and the modified flags.
 pub fn dec_reg(register: u8) -> (u8, u8) {
     let new_value = register.wrapping_sub(1);
