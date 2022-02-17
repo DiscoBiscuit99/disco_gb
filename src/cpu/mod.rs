@@ -1,49 +1,49 @@
 use crate::memory::Memory;
 
 mod registers;
+use registers::*;
+
 mod instructions;
-mod interrupts;
+use instructions::*;
 
 // ~ 1000 / 4194304, 4.194304 MHz = CPU freg (T-cycles), 
 // or 1.048576 MHz = M-cycles
 const CLOCK_CYCLE_NANOS: u64 = 1_000_000_000 / 41943044; 
 
-/// The struct representing the CPU.
-/// 
-/// Contains the eight registers represented in the `Regs` struct, the two special registers SP 
-/// (the stack pointer) and PC (the program counter), the IME (the interrupt master enable), and
-/// the elapsed amount of cycles.
 pub struct Cpu {
-    regs: registers::Regs,
+    regs: Regs,
     sp: usize,
     pc: usize,
-    ime: bool,
-    div_ctrl: u16,
+    ime: u8,
 }
 
 impl Cpu {
     /// Returns a new instance of `Cpu`.
     pub fn new() -> Self {
         Self {
-            regs: registers::Regs::default(),
+            regs: Regs::default(),
             sp: 0,
             pc: 0,
-            ime: true,
-            div_ctrl: 0,
+            ime: 0,
         }
     }
 
     /// Runs the CPU.
     pub fn run(&mut self, memory: &mut Memory) {
-        loop {
-            self.step(memory);
+        let mut should_run = true;
+        while should_run {
+            should_run = self.step(memory);
         }
-        //memory.file_dump();
+        memory.file_dump();
     }
 
-    /// Steps the CPU once.
-    fn step(&mut self, memory: &mut Memory) {
-        self.decode_execute(memory);
+    fn step(&mut self, memory: &mut Memory) -> bool {
+        let opcode = self.consume_byte(memory);
+        if opcode == 0x00 { // NOP
+            return false;
+        }
+        self.decode_execute(opcode, memory);
+        true
     }
 
     /// Matches (decodes) the given opcode and executes it.
@@ -262,49 +262,22 @@ impl Cpu {
             //_ => unimplemented!("opcode {:#04x}", opcode),
         //}
 
-        // Increment the Divider Register.
-        if self.div_ctrl > 255 {
-            let new_div = memory.read_byte(0xff04).wrapping_add(1);
-            memory.write_byte(0xff04, new_div);
-            self.div_ctrl = 0;
+        #[cfg(debug_assertions)] {
+            println!();
+            println!("PC: {:#06x}", self.pc);
+            println!("SP: {:#06x}", self.sp);
+            println!("flags: {:#010b}", self.regs.f());
         }
 
-        /* Interupt handling. */
-        if self.ime {
-            // TODO: check for and handle potential interrupts.
-
-            // Get the byte representing the interrupt requests.
-            let interrupt_requests = memory.read_byte(0xff0f);
-            let interrupt_enables = memory.read_byte(0xffff);
-
-            /* 
-             * The following bits are checked in priority of LSB to MSB:
-             *  - Bit 0: V-Blank
-             *  - Bit 1: LCD STAT
-             *  - Bit 2: Timer
-             *  - Bit 3: Serial
-             *  - Bit 4: Joypad
-             */
-
-            // Check the bits.
-            if interrupt_requests & interrupt_enables & 1 == 1 { // V-Blank
-                interrupts::vblank_interrupt_handler(self, memory);
-            } else if interrupt_requests & interrupt_enables & (1 << 1) == (1 << 1) { // LCD STAT
-                interrupts::lcd_stat_interrupt_handler(self, memory);
-            } else if interrupt_requests & interrupt_enables & (1 << 2) == (1 << 2) { // Timer
-                interrupts::timer_interrupt_handler(self, memory);
-            } else if interrupt_requests & interrupt_enables & (1 << 3) == (1 << 3) { // Serial
-                interrupts::serial_interrupt_handler(self, memory);
-            } else if interrupt_requests & interrupt_enables & (1 << 4) == (1 << 4) { // Joypad
-                interrupts::joypad_interrupt_handler(self, memory);
-            }
-        }
+        // TODO: check interrupts.
     }
 
     /// Returns the byte at the current PC and increments it.
     fn consume_byte(&mut self, memory: &Memory) -> u8 {
+        // Had it been C, it could have been `memory.read_byte(self.pc++)`.
+        let byte = memory.read_byte(self.pc);
         self.pc += 1;
-        memory.read_byte(self.pc - 1)
+        byte
     }
 }
 

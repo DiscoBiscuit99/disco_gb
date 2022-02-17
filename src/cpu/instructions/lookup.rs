@@ -13,13 +13,13 @@ pub enum InstructionAccess {
 
 lazy_static!(
     pub static ref INSTR_TABLE: HashMap<u8, InstructionAccess> = HashMap::from([
-        (0x00, InstructionAccess::Cpu(super::opcode_00)), // NOP
-        (0x04, InstructionAccess::Cpu(super::opcode_04)), // INC B
-        (0x05, InstructionAccess::Cpu(super::opcode_05)), // DEC B
-        (0x06, InstructionAccess::CpuWithMemory(super::opcode_06)), // LD B, u8
-        (0x0c, InstructionAccess::Cpu(super::opcode_0c)), // INC C
-        (0x0d, InstructionAccess::Cpu(super::opcode_0d)), // INC C
-        (0x0e, InstructionAccess::CpuWithMemory(super::opcode_0e)), // LD C, u8
+        (0x00, InstructionAccess::Cpu(super::op_00)), // NOP
+        (0x04, InstructionAccess::Cpu(super::op_04)), // INC B
+        (0x05, InstructionAccess::Cpu(super::op_05)), // DEC B
+        (0x06, InstructionAccess::CpuWithMemory(super::op_06)), // LD B, u8
+        (0x0c, InstructionAccess::Cpu(super::op_0c)), // INC C
+        (0x0d, InstructionAccess::Cpu(super::op_0d)), // INC C
+        (0x0e, InstructionAccess::CpuWithMemory(super::op_0e)), // LD C, u8
     ]);
 );
 
