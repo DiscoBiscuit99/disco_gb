@@ -32,27 +32,20 @@ fn dec_reg(register: u8) -> (u8, u8) {
 /* PREFIX INSTRUCTIONS */
 
 /// Handles the prefixed instructions.
-pub fn prefix(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_cb(cpu: &mut Cpu, memory: &mut Memory) {
+    use lookup::{ InstructionAccess, INSTRS_PREFIX };
+
     let opcode = cpu.consume_byte(memory);
-    match opcode {
-        0x11 => { // RL C
-            #[cfg(debug_assertions)]
-            println!("Prefixed opcode: {:#04x} -> RL C", opcode);
-            op_cb11(cpu);
-        },
-        0x17 => { // RL A
-            #[cfg(debug_assertions)]
-            println!("Prefixed opcode: {:#04x} -> RL A", opcode);
-            op_cb17(cpu);
-        },
-        0x7c => { // BIT 7, H
-            #[cfg(debug_assertions)]
-            println!("Prefixed opcode: {:#04x} -> BIT 7, H", opcode);
-            op_cb7c(cpu);
-        },   
-        _ => unimplemented!("Prefixed opcode {:#04x}", opcode),
+    if let Some(instr_access) = INSTRS_PREFIX.get(&opcode) {
+        match instr_access {
+            InstructionAccess::Cpu(instr) => instr(cpu),
+            InstructionAccess::CpuWithMemory(instr) => instr(cpu, memory),
+        }
+    } else {
+        todo!("{:#04x}", opcode);
     }
-    cpu.div_ctrl += 4; // Fetching the prefix
+
+    cpu.div_ctrl += 4; // fetching the prefix
 }
 
 /// RLC B
@@ -356,7 +349,7 @@ pub fn op_05(cpu: &mut Cpu) {
 }
 
 /// LD B, u8
-pub fn op_06(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_06(cpu: &mut Cpu, memory: &mut Memory) {
     let byte = cpu.consume_byte(memory);
     cpu.regs.set_b(byte);
     cpu.div_ctrl += 8;
@@ -403,14 +396,14 @@ pub fn op_0d(cpu: &mut Cpu) {
 }
 
 /// LD C, u8
-pub fn op_0e(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_0e(cpu: &mut Cpu, memory: &mut Memory) {
     let byte = cpu.consume_byte(memory);
     cpu.regs.set_c(byte);
     cpu.div_ctrl += 8;
 }
 
 /// LD DE, u16
-pub fn op_11(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_11(cpu: &mut Cpu, memory: &mut Memory) {
     let lower = cpu.consume_byte(memory) as u16;
     let upper = (cpu.consume_byte(memory) as u16) << 8;
     cpu.regs.set_de(upper | lower);
@@ -446,7 +439,7 @@ pub fn op_15(cpu: &mut Cpu) {
 }
 
 /// LD D, u8
-pub fn op_16(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_16(cpu: &mut Cpu, memory: &mut Memory) {
     let byte = cpu.consume_byte(memory);
     cpu.regs.set_d(byte);
     cpu.div_ctrl += 8;
@@ -472,7 +465,7 @@ pub fn op_17(cpu: &mut Cpu) {
 }
 
 /// JR i8
-pub fn op_18(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_18(cpu: &mut Cpu, memory: &mut Memory) {
     // The castings and their order in this function are important 
     // and should not be changed. Otherwise the values won't be translated correctly.
     let offset = cpu.consume_byte(memory) as i8;
@@ -481,7 +474,7 @@ pub fn op_18(cpu: &mut Cpu, memory: &Memory) {
 }
 
 /// LD A, (DE)
-pub fn op_1a(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_1a(cpu: &mut Cpu, memory: &mut Memory) {
     let addr = cpu.regs.de() as usize;
     cpu.regs.set_a(memory.read_byte(addr));
     cpu.div_ctrl += 8;
@@ -508,7 +501,7 @@ pub fn op_1d(cpu: &mut Cpu) {
 }
 
 /// LD E, u8
-pub fn op_1e(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_1e(cpu: &mut Cpu, memory: &mut Memory) {
     let byte = cpu.consume_byte(memory);
     cpu.regs.set_e(byte);
     cpu.div_ctrl += 8;
@@ -516,7 +509,7 @@ pub fn op_1e(cpu: &mut Cpu, memory: &Memory) {
 
 /// JR NZ, i8. 
 /// Jump relatively if the Z flag is not set.
-pub fn op_20(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_20(cpu: &mut Cpu, memory: &mut Memory) {
     // The castings and their order in this function are important 
     // and should not be changed. Otherwise the values won't be translated correctly.
     let offset = cpu.consume_byte(memory) as i8;
@@ -529,7 +522,7 @@ pub fn op_20(cpu: &mut Cpu, memory: &Memory) {
 }
 
 /// LD HL, u16
-pub fn op_21(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_21(cpu: &mut Cpu, memory: &mut Memory) {
     let lower = cpu.consume_byte(memory) as u16;
     let upper = (cpu.consume_byte(memory) as u16) << 8;
     cpu.regs.set_hl(upper | lower);
@@ -574,7 +567,7 @@ pub fn op_24(cpu: &mut Cpu) {
 
 /// JR Z, i8. 
 /// Jump relatively if the Z flag is set.
-pub fn op_28(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_28(cpu: &mut Cpu, memory: &mut Memory) {
     // The castings and their order in this function are important 
     // and should not be changed. Otherwise the values won't be translated correctly.
     let offset = cpu.consume_byte(memory) as i8;
@@ -589,7 +582,7 @@ pub fn op_28(cpu: &mut Cpu, memory: &Memory) {
 /// LD SP, u16
 /// REMEMBER: the GameBoy is little endian, meaning 
 /// the first byte is least significant.
-pub fn op_31(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_31(cpu: &mut Cpu, memory: &mut Memory) {
     let lower = cpu.consume_byte(memory) as u16;
     let upper = (cpu.consume_byte(memory) as u16) << 8;
     cpu.sp = (upper | lower) as usize;
@@ -626,7 +619,7 @@ pub fn op_3d(cpu: &mut Cpu) {
 }
 
 /// LD A, u8
-pub fn op_3e(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_3e(cpu: &mut Cpu, memory: &mut Memory) {
     let byte = cpu.consume_byte(memory);
     cpu.regs.set_a(byte);
     cpu.div_ctrl += 8;
@@ -723,7 +716,7 @@ pub fn op_af(cpu: &mut Cpu) {
 }
 
 /// POP BC
-pub fn op_c1(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_c1(cpu: &mut Cpu, memory: &mut Memory) {
     let lower = memory.read_byte(cpu.sp);
     cpu.sp += 1;
     let upper = memory.read_byte(cpu.sp);
@@ -743,7 +736,7 @@ pub fn op_c5(cpu: &mut Cpu, memory: &mut Memory) {
 }
 
 /// RET
-pub fn op_c9(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_c9(cpu: &mut Cpu, memory: &mut Memory) {
     let lower = memory.read_byte(cpu.sp) as usize;
     cpu.sp += 1;
     let upper = (memory.read_byte(cpu.sp) as usize) << 8;
@@ -797,7 +790,7 @@ pub fn op_ea(cpu: &mut Cpu, memory: &mut Memory) {
 }
 
 /// LD A, (FF00+u8)
-pub fn op_f0(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_f0(cpu: &mut Cpu, memory: &mut Memory) {
     let byte = cpu.consume_byte(memory);
     // 0xff00 + u8 will never overflow, so no need to wrap here.
     cpu.regs.set_a(memory.read_byte(0xff00 + byte as usize));
@@ -812,7 +805,7 @@ pub fn op_f3(cpu: &mut Cpu) {
 }
 
 /// CP A, u8
-pub fn op_fe(cpu: &mut Cpu, memory: &Memory) {
+pub fn op_fe(cpu: &mut Cpu, memory: &mut Memory) {
     let a = cpu.regs.a();
     let byte = cpu.consume_byte(memory);
     let diff = a.wrapping_sub(byte);
